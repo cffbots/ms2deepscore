@@ -85,7 +85,8 @@ def create_confusion_matrix_plot(reference_scores, comparison_scores, n_bins=5,
                                  ref_score_name="Tanimoto similarity", compare_score_name="MS2DeepScore",
                                  max_square_size=5000,
                                  lower_bound=0, upper_bound=1,
-                                 color_by_reference_fraction=True):
+                                 color_by_reference_fraction=True,
+                                 add_numbers=True):
     """
     Plot histograms to compare reference and comparison scores.
 
@@ -119,13 +120,16 @@ def create_confusion_matrix_plot(reference_scores, comparison_scores, n_bins=5,
                                      xlabel=compare_score_name, ylabel=ref_score_name,
                                      max_size=max_square_size,
                                      lower_bound=lower_bound, upper_bound=upper_bound,
-                                     color_by_reference_fraction=color_by_reference_fraction)
+                                     color_by_reference_fraction=color_by_reference_fraction,
+                                     add_numbers=add_numbers)
     return fig
 
 
 def plot_confusion_like_matrix(confusion_like_matrix_scatter, confusion_like_matrix,
                               xlabel, ylabel, max_size=5000,
-                              lower_bound=0, upper_bound=1, color_by_reference_fraction=True):
+                              lower_bound=0, upper_bound=1,
+                               color_by_reference_fraction=True,
+                               add_numbers=True):
     """Do the actual plotting"""
     # pylint: disable=too-many-arguments
     summed_tanimoto = []
@@ -146,8 +150,12 @@ def plot_confusion_like_matrix(confusion_like_matrix_scatter, confusion_like_mat
     else:
         fig = plt.figure(figsize=(8, 8))
         plt.scatter([x[1] for x in confusion_like_matrix_scatter],
-                    [x[0] for x in confusion_like_matrix_scatter], marker='s', c="teal",
+                    [x[0] for x in confusion_like_matrix_scatter], marker='s', c="dodgerblue",
                     s=sizes*max_size)
+    if add_numbers:
+        cell_size = (upper_bound - lower_bound) / int(len(confusion_like_matrix_scatter)**0.5)
+        for x in confusion_like_matrix_scatter:
+            plt.text(x[1], x[0]+0.1*cell_size, str(x[2]), ha="center")
     if color_by_reference_fraction:
         cbar = plt.colorbar()
         cbar.ax.tick_params(labelsize=14)
