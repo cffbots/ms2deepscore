@@ -155,7 +155,7 @@ def plot_confusion_like_matrix(confusion_like_matrix_scatter, confusion_like_mat
     if add_numbers:
         cell_size = (upper_bound - lower_bound) / int(len(confusion_like_matrix_scatter)**0.5)
         for x in confusion_like_matrix_scatter:
-            plt.text(x[1], x[0]+0.1*cell_size, str(x[2]), ha="center")
+            plt.text(x[1], x[0]-0.2*cell_size, str(x[2]), ha="center")
     if color_by_reference_fraction:
         cbar = plt.colorbar()
         cbar.ax.tick_params(labelsize=14)
