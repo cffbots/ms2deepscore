@@ -69,6 +69,9 @@ class DataGeneratorBase(Sequence):
         use_fixed_set
             Toggles using a fixed dataset, if set to True the same dataset will be generated each
             epoch. Default is False.
+        metadata_to_vector
+            If set True, key metadata entries (charge, parent mass esimate, precurosr-m/z) will
+            be added to created vectors. Default is False.
         """
 
         self._validate_labels(reference_scores_df)
@@ -81,6 +84,7 @@ class DataGeneratorBase(Sequence):
         self._collect_and_validate_inchikeys()
         self.dim = dim
         self.fixed_set = dict()
+        self.dim_metadata = 3 if self.settings["metadata_to_vector"] else 0
 
     def _collect_and_validate_inchikeys(self):
         """Collect all inchikeys14 (first 14 characters) of all binned_spectrums
@@ -113,6 +117,20 @@ class DataGeneratorBase(Sequence):
         if n_dropped > 0:
             print(f"{n_dropped} nans among {len(reference_scores_df)} labels will be excluded.")
         return clean_df
+
+    @staticmethod
+    def _metadata_input(spectrum):
+        """Convert metadata fields to values for input vectors"""
+        charge = spectrum.get("charge")
+        if charge is None:
+            charge = 0
+        parent_mass = spectrum.get("parent_mass")
+        if parent_mass is None:
+            parent_mass = 0
+        precursor_mz = spectrum.get("precursor_mz")
+        if precursor_mz is None:
+            precursor_mz = 0
+        return np.array([charge, parent_mass/1000, precursor_mz/1000])
 
     def _set_generator_parameters(self, **settings):
         """Set parameter for data generator. Use below listed defaults unless other
@@ -152,6 +170,9 @@ class DataGeneratorBase(Sequence):
         use_fixed_set
             Toggles using a fixed dataset, if set to True the same dataset will be generated each
             epoch. Default is False.
+        metadata_to_vector
+            If set True, key metadata entries (charge, parent mass esimate, precurosr-m/z) will
+            be added to created vectors. Default is False.
         """
         defaults = dict(
             batch_size=32,
@@ -164,7 +185,8 @@ class DataGeneratorBase(Sequence):
             augment_intensity=0.4,
             augment_noise_max=10,
             augment_noise_intensity=0.01,
-            use_fixed_set=False
+            use_fixed_set=False,
+            metadata_to_vector=False
         )
 
         # Set default parameters or replace by **settings input
@@ -281,7 +303,7 @@ class DataGeneratorBase(Sequence):
     def __data_generation(self, spectrum_pairs: Iterator[SpectrumPair]):
         """Generates data containing batch_size samples"""
         # Initialization
-        X = [np.zeros((self.settings["batch_size"], self.dim)) for i in range(2)]
+        X = [np.zeros((self.settings["batch_size"], self.dim + self.dim_metadata)) for i in range(2)]
         y = np.zeros((self.settings["batch_size"],))
 
         # Generate data
@@ -289,6 +311,8 @@ class DataGeneratorBase(Sequence):
             for i_spectrum, spectrum in enumerate(pair):
                 idx, values = self._data_augmentation(spectrum.binned_peaks)
                 X[i_spectrum][i_pair, idx] = values
+                if self.settings["metadata_to_vector"]:
+                    X[i_spectrum][i_pair, self.dim:] = self._metadata_input(spectrum)
             y[i_pair] = self.reference_scores_df[pair[0].get("inchikey")[:14]][pair[1].get("inchikey")[:14]]
 
         return X, y

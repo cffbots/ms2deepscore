@@ -65,6 +65,34 @@ def test_DataGeneratorAllSpectrums():
     assert test_generator.settings["augment_intensity"] == 0.0, "Expected changed value."
 
 
+def test_DataGeneratorAllSpectrums_metadata():
+    """Test for DataGeneratorAllSpectrums when using metadata"""
+    # Get test data
+    binned_spectrums, tanimoto_scores_df = create_test_data()
+    binned_spectrums = [s.set("charge", 2) for s in binned_spectrums]
+    binned_spectrums = [s.set("parent_mass", 800.0) for s in binned_spectrums]
+    binned_spectrums = [s.set("precursor_mz", 400.0) for s in binned_spectrums]
+
+
+    # Define other parameters
+    batch_size = 10
+    dimension = 88
+
+    # Create generator
+    test_generator = DataGeneratorAllSpectrums(binned_spectrums=binned_spectrums[:150],
+                                               reference_scores_df=tanimoto_scores_df,
+                                               dim=dimension, batch_size=batch_size,
+                                               augment_removal_max=0.0,
+                                               augment_removal_intensity=0.0,
+                                               augment_intensity=0.0,
+                                               metadata_to_vector=True)
+
+    A, B = test_generator.__getitem__(0)
+    assert A[0].shape == A[1].shape == (10, 91), "Expected different data shape"
+    assert B.shape[0] == 10, "Expected different label shape."
+    assert np.allclose(A[0][0][-3:], np.array([2, 0.8, 0.4])), "Expected different metadata values"
+
+
 def test_DataGeneratorAllSpectrums_no_inchikey_leaking():
     """Test if non-selected InChIKeys are correctly removed"""
     # Get test data
