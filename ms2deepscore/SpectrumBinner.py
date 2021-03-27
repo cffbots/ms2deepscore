@@ -120,7 +120,11 @@ class SpectrumBinner:
             assert 100*missing_fractions[i] <= self.allowed_missing_percentage, \
                 f"{100*missing_fractions[i]:.2f} of weighted spectrum is unknown to the model."
             spectrum = BinnedSpectrum(binned_peaks=create_peak_dict(peak_list),
-                                      metadata={"inchikey": input_spectrums[i].get("inchikey")})
+                                      metadata={"inchikey": input_spectrums[i].get("inchikey"),
+                                                "charge": input_spectrums[i].get("charge"),
+                                                "parent_mass": input_spectrums[i].get("parent_mass"),
+                                                "precursor_mz": input_spectrums[i].get("precursor_mz")
+                                                })
             spectrums_binned.append(spectrum)
         return spectrums_binned
 
