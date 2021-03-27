@@ -84,7 +84,6 @@ class DataGeneratorBase(Sequence):
         self._collect_and_validate_inchikeys()
         self.dim = dim
         self.fixed_set = dict()
-        self.dim_metadata = 3 if self.settings["metadata_to_vector"] else 0
 
     def _collect_and_validate_inchikeys(self):
         """Collect all inchikeys14 (first 14 characters) of all binned_spectrums
@@ -303,7 +302,7 @@ class DataGeneratorBase(Sequence):
     def __data_generation(self, spectrum_pairs: Iterator[SpectrumPair]):
         """Generates data containing batch_size samples"""
         # Initialization
-        X = [np.zeros((self.settings["batch_size"], self.dim + self.dim_metadata)) for i in range(2)]
+        X = [np.zeros((self.settings["batch_size"], self.dim)) for i in range(2)]
         y = np.zeros((self.settings["batch_size"],))
 
         # Generate data
@@ -312,7 +311,7 @@ class DataGeneratorBase(Sequence):
                 idx, values = self._data_augmentation(spectrum.binned_peaks)
                 X[i_spectrum][i_pair, idx] = values
                 if self.settings["metadata_to_vector"]:
-                    X[i_spectrum][i_pair, self.dim:] = self._metadata_input(spectrum)
+                    X[i_spectrum][i_pair, -3:] = self._metadata_input(spectrum)
             y[i_pair] = self.reference_scores_df[pair[0].get("inchikey")[:14]][pair[1].get("inchikey")[:14]]
 
         return X, y

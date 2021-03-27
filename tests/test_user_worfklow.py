@@ -45,7 +45,7 @@ def test_user_workflow():
     assert len(spectrum_binner.known_bins) == 543, "Expected differnt number of known binned peaks"
 
     # Create generator
-    dimension = len(spectrum_binner.known_bins)
+    dimension = len(spectrum_binner.known_bins) + 3
     same_prob_bins = [(0, 0.5), (0.5, 1)]
     test_generator = DataGeneratorAllSpectrums(binned_spectrums, tanimoto_scores_df,
                                                dim=dimension,

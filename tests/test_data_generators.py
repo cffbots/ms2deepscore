@@ -76,7 +76,7 @@ def test_DataGeneratorAllSpectrums_metadata():
 
     # Define other parameters
     batch_size = 10
-    dimension = 88
+    dimension = 88 + 3
 
     # Create generator
     test_generator = DataGeneratorAllSpectrums(binned_spectrums=binned_spectrums[:150],

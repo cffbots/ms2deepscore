@@ -19,7 +19,7 @@ def get_test_binner_and_generator():
     spectrum_binner = SpectrumBinner(400, mz_min=10.0, mz_max=500.0, peak_scaling=0.5)
     binned_spectrums = spectrum_binner.fit_transform(spectrums)
 
-    dimension = len(spectrum_binner.known_bins)
+    dimension = len(spectrum_binner.known_bins) + 3
     same_prob_bins = [(0, 0.5), (0.5, 1)]
     selected_inchikeys = tanimoto_scores_df.index[:60]
 
@@ -43,7 +43,7 @@ def test_siamese_model():
     assert len(model.model.layers) == 4, "Expected different number of layers"
     assert len(model.model.layers[2].layers) == len(model.base.layers) == 11, \
         "Expected different number of layers"
-    assert model.model.input_shape == [(None, 339), (None, 339)], "Expected different input shape"
+    assert model.model.input_shape == [(None, 342), (None, 342)], "Expected different input shape"
     np.testing.assert_array_almost_equal(model.base.layers[1].kernel_regularizer.l1, 1e-6), \
         "Expected different L1 regularization rate"
     np.testing.assert_array_almost_equal(model.base.layers[1].kernel_regularizer.l2, 1e-6), \
@@ -67,7 +67,7 @@ def test_siamese_model_different_architecture():
     assert len(model.model.layers) == 4, "Expected different number of layers"
     assert len(model.model.layers[2].layers) == len(model.base.layers) == 17, \
         "Expected different number of layers"
-    assert model.model.input_shape == [(None, 339), (None, 339)], "Expected different input shape"
+    assert model.model.input_shape == [(None, 342), (None, 342)], "Expected different input shape"
     assert model.base.output_shape == (None, 100), "Expected different output shape of base model"
 
 

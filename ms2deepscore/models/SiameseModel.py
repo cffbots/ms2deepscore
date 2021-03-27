@@ -74,7 +74,7 @@ class SiameseModel:
         assert spectrum_binner.known_bins is not None, \
             "spectrum_binner does not contain known bins (run .fit_transform() on training data first!)"
         self.spectrum_binner = spectrum_binner
-        self.input_dim = len(spectrum_binner.known_bins)
+        self.input_dim = len(spectrum_binner.known_bins) + 3  # add metadata dimensions
 
         if keras_model is None:
             # Create base model
