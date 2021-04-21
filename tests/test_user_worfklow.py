@@ -41,7 +41,7 @@ def test_user_workflow():
     # Create binned spectrums
     spectrum_binner = SpectrumBinner(1000, mz_min=10.0, mz_max=1000.0, peak_scaling=0.5)
     binned_spectrums = spectrum_binner.fit_transform(spectrums)
-    assert spectrum_binner.d_bins == 0.99, "Expected differnt bin size"
+    assert spectrum_binner.bin_size == 0.99, "Expected differnt bin size"
     assert len(spectrum_binner.known_bins) == 543, "Expected differnt number of known binned peaks"
 
     # Create generator

@@ -6,7 +6,7 @@ from tqdm import tqdm
 from matchms import Spectrum
 
 
-def create_peak_list_fixed(spectrums, peaks_vocab, d_bins,
+def create_peak_list_fixed(spectrums, peaks_vocab, bin_size,
                            mz_max=1000.0, mz_min=10.0, peak_scaling=0.5,
                            progress_bar=True):
     """Create list of (binned) peaks.
@@ -17,7 +17,7 @@ def create_peak_list_fixed(spectrums, peaks_vocab, d_bins,
         List of spectrums. 
     peaks_vocab
         Dictionary of all known peak bins.
-    d_bins
+    bin_size
         Bin width.
     mz_max
         Upper bound of m/z to include in binned spectrum. Default is 1000.0.
@@ -34,7 +34,7 @@ def create_peak_list_fixed(spectrums, peaks_vocab, d_bins,
 
     for spectrum in tqdm(spectrums, desc="Spectrum binning",
                          disable=(not progress_bar)):
-        doc = bin_number_array_fixed(spectrum.peaks.mz, d_bins, mz_max=mz_max, mz_min=mz_min)
+        doc = bin_number_array_fixed(spectrum.peaks.mz, bin_size, mz_max=mz_max, mz_min=mz_min)
         weights = spectrum.peaks.intensities ** peak_scaling                
         
         # Find binned peaks present in peaks_vocab
@@ -53,7 +53,7 @@ def create_peak_list_fixed(spectrums, peaks_vocab, d_bins,
     return peak_lists, missing_fractions
 
 
-def unique_peaks_fixed(spectrums: List[Spectrum], d_bins: float,
+def unique_peaks_fixed(spectrums: List[Spectrum], bin_size: float,
                        mz_max: float, mz_min: float):
     """Collect unique (binned) peaks.
     
@@ -61,7 +61,7 @@ def unique_peaks_fixed(spectrums: List[Spectrum], d_bins: float,
     ----------
     spectrums
         List of spectrums. 
-    d_bins
+    bin_size
         Bin width.
     mz_max
         Upper bound of m/z to include in binned spectrum.
@@ -70,7 +70,7 @@ def unique_peaks_fixed(spectrums: List[Spectrum], d_bins: float,
     """
     unique_peaks = set()
     for spectrum in spectrums:
-        for mz in bin_number_array_fixed(spectrum.peaks.mz, d_bins, mz_max, mz_min):
+        for mz in bin_number_array_fixed(spectrum.peaks.mz, bin_size, mz_max, mz_min):
             unique_peaks.add(mz)
     unique_peaks = sorted(unique_peaks)
     class_values = {}
@@ -81,16 +81,16 @@ def unique_peaks_fixed(spectrums: List[Spectrum], d_bins: float,
     return class_values, [int(x) for x in unique_peaks]
 
 
-def bin_size_fixed(number, d_bins):
-    return d_bins * number
+def bin_size_fixed(number, bin_size):
+    return bin_size * number
 
 
-def bin_number_fixed(mz, d_bins):
+def bin_number_fixed(mz, bin_size):
     """Return binned position"""
-    return int(mz/d_bins)
+    return int(mz/bin_size)
 
 
-def bin_number_array_fixed(mz_array: np.ndarray, d_bins: float,
+def bin_number_array_fixed(mz_array: np.ndarray, bin_size: float,
                            mz_max: float, mz_min: float) -> np.ndarray:
     """Return binned position
 
@@ -98,7 +98,7 @@ def bin_number_array_fixed(mz_array: np.ndarray, d_bins: float,
     ----------
     mz_array
         Numpy array of peak m/z positions.
-    d_bins
+    bin_size
         Bin width.
     mz_max
         Upper bound of m/z to include in binned spectrum.
@@ -107,9 +107,9 @@ def bin_number_array_fixed(mz_array: np.ndarray, d_bins: float,
     """
     mz_array_selected = mz_array[(mz_array >= mz_min) & (mz_array <= mz_max)]
     assert mz_array_selected.shape[0] > 0, "Found no peaks between mz_min and mz_max."
-    bins = mz_array_selected/d_bins
-    return (bins - bin_number_fixed(mz_min, d_bins)).astype(int)
+    bins = mz_array_selected/bin_size
+    return (bins - bin_number_fixed(mz_min, bin_size)).astype(int)
 
 
-def set_d_bins_fixed(number_of_bins, mz_min=10.0, mz_max=1000.0):
+def set_bin_size_fixed(number_of_bins, mz_min=10.0, mz_max=1000.0):
     return (mz_max - mz_min) / number_of_bins

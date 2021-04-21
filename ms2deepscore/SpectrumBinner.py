@@ -6,7 +6,7 @@ from matchms.typing import SpectrumType
 from .BinnedSpectrum import BinnedSpectrum
 from .typing import BinnedSpectrumType
 from .spectrum_binning_fixed import create_peak_list_fixed
-from .spectrum_binning_fixed import set_d_bins_fixed
+from .spectrum_binning_fixed import set_bin_size_fixed
 from .spectrum_binning_fixed import unique_peaks_fixed
 from .utils import create_peak_dict
 
@@ -44,7 +44,7 @@ class SpectrumBinner:
         assert mz_max > mz_min, "mz_max must be > mz_min"
         self.mz_max = mz_max
         self.mz_min = mz_min
-        self.d_bins = set_d_bins_fixed(number_of_bins, mz_min=mz_min, mz_max=mz_max)
+        self.bin_size = set_bin_size_fixed(number_of_bins, mz_min=mz_min, mz_max=mz_max)
         self.peak_scaling = peak_scaling
         self.allowed_missing_percentage = allowed_missing_percentage
         self.peak_to_position = None
@@ -84,7 +84,7 @@ class SpectrumBinner:
             Show progress bar if set to True. Default is True.
         """
         print("Collect spectrum peaks...")
-        peak_to_position, known_bins = unique_peaks_fixed(spectrums, self.d_bins,
+        peak_to_position, known_bins = unique_peaks_fixed(spectrums, self.bin_size,
                                                           self.mz_max, self.mz_min)
         print(f"Calculated embedding dimension: {len(known_bins)}.")
         self.peak_to_position = peak_to_position
@@ -109,7 +109,7 @@ class SpectrumBinner:
         """
         peak_lists, missing_fractions = create_peak_list_fixed(input_spectrums,
                                                                self.peak_to_position,
-                                                               self.d_bins,
+                                                               self.bin_size,
                                                                mz_max=self.mz_max, mz_min=self.mz_min,
                                                                peak_scaling=self.peak_scaling,
                                                                progress_bar=progress_bar)

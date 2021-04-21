@@ -9,7 +9,7 @@ def test_SpectrumBinner():
     ms2ds_binner = SpectrumBinner(100)
     assert ms2ds_binner.mz_max == 1000.0, "Expected different default value."
     assert ms2ds_binner.mz_min == 10.0, "Expected different default value."
-    assert ms2ds_binner.d_bins == 9.9, "Expected different calculated bin size."
+    assert ms2ds_binner.bin_size == 9.9, "Expected different calculated bin size."
 
 
 def test_SpectrumBinner_set_min_max():
@@ -17,7 +17,7 @@ def test_SpectrumBinner_set_min_max():
     ms2ds_binner = SpectrumBinner(100, mz_min=0.0, mz_max=100.0)
     assert ms2ds_binner.mz_max == 100.0, "Expected different default value."
     assert ms2ds_binner.mz_min == 0.0, "Expected different default value."
-    assert ms2ds_binner.d_bins == 1.0, "Expected different calculated bin size."
+    assert ms2ds_binner.bin_size == 1.0, "Expected different calculated bin size."
 
 
 def test_SpectrumBinner_fit_transform():
