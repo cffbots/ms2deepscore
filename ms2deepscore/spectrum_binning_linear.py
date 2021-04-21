@@ -1,9 +1,14 @@
 """ Functions to create binned vector from spectrum using linearly increasing width bins.
 """
+import numpy as np
+from tqdm import tqdm
+
+
 def create_peak_list_linear(spectrums, peaks_vocab,
                             min_bin_size: float, slope: float,
                             mz_min: float = 10.0,
-                            peak_scaling: float = 0.5):
+                            peak_scaling: float = 0.5,
+                            progress_bar: bool = True):
     """Create list of (binned) peaks.
 
     Parameters
@@ -24,14 +29,26 @@ def create_peak_list_linear(spectrums, peaks_vocab,
         Show progress bar if set to True. Default is True.
     """
     peak_lists = []
+    missing_fractions = []
 
-    for spectrum in spectrums:
+    for spectrum in tqdm(spectrums, desc="Spectrum binning",
+                         disable=(not progress_bar)):
         doc = bin_number_array_linear(spectrum.peaks.mz, min_bin_size, slope, mz_min=mz_min)
         weights = spectrum.peaks.intensities ** peak_scaling
-        doc_bow = [peaks_vocab[x] for x in doc]
-        peak_lists.append(list(zip(doc_bow, weights)))
+        
+        # Find binned peaks present in peaks_vocab
+        idx_in_vocab = [i for i, x in enumerate(doc) if x in peaks_vocab.keys()]
+        idx_not_in_vocab = [i for i in np.arange(len(doc)) if i not in idx_in_vocab]
+    
+        doc_bow = [peaks_vocab[doc[i]] for i in idx_in_vocab]
 
-    return peak_lists
+        peak_lists.append(list(zip(doc_bow, weights[idx_in_vocab])))
+        if len(idx_in_vocab) == 0:
+            missing_fractions.append(1.0)
+        else:
+            missing_fractions.append(np.sum(weights[idx_not_in_vocab])/np.sum(weights))
+
+    return peak_lists, missing_fractions
 
 
 def unique_peaks_linear(spectrums, min_bin_size, slope, mz_min):

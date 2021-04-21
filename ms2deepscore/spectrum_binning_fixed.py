@@ -43,7 +43,6 @@ def create_peak_list_fixed(spectrums, peaks_vocab, bin_size,
     
         doc_bow = [peaks_vocab[doc[i]] for i in idx_in_vocab]
 
-        # TODO add missing weighted part!?!?
         peak_lists.append(list(zip(doc_bow, weights[idx_in_vocab])))
         if len(idx_in_vocab) == 0:
             missing_fractions.append(1.0)
