@@ -53,8 +53,10 @@ class SpectrumBinnerCustom:
             Json string containing the dictionary to create a SpectrumBinner.
         """
         binner_dict = json.loads(json_str)
-        spectrum_binner = cls(binner_dict["number_of_bins"],
-                              binner_dict["mz_max"], binner_dict["mz_min"],
+        mz_bins = binner_dict["mz_bins"]
+        if isinstance(mz_bins, list):
+            mz_bins = np.asarray(mz_bins)
+        spectrum_binner = cls(mz_bins,
                               binner_dict["peak_scaling"],
                               binner_dict["allowed_missing_percentage"])
         spectrum_binner.peak_to_position = {int(key): value for key, value in binner_dict["peak_to_position"].items()}
@@ -117,4 +119,15 @@ class SpectrumBinnerCustom:
 
     def to_json(self):
         """Return SpectrumBinner instance as json dictionary."""
-        return json.dumps(self.__dict__)
+        return json.dumps(self.__dict__, cls=NumpyArrayEncoder)
+
+
+from json import JSONEncoder
+import numpy
+
+class NumpyArrayEncoder(JSONEncoder):
+    """Handle numpy.ndarray objects."""
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return JSONEncoder.default(self, obj)

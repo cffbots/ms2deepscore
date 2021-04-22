@@ -60,7 +60,7 @@ def test_SpectrumBinner_transform():
                           intensities=np.array([0.4, 0.5, 0.2, 0.1]),
                           metadata={'inchikey': "test_inchikey_02"})
 
-    binned_spectrums = ms2ds_binner.fit_transform([spectrum_1, spectrum_2])
+    _ = ms2ds_binner.fit_transform([spectrum_1, spectrum_2])
     assert ms2ds_binner.known_bins == [10, 20, 30, 40, 50, 90, 99], "Expected different known bins."
 
     spectrum_3 = Spectrum(mz=np.array([10, 20, 30, 50.]),
@@ -81,7 +81,7 @@ def test_SpectrumBinner_transform_missing_fraction():
                           intensities=np.array([0.4, 0.5, 0.2, 0.1]),
                           metadata={'inchikey': "test_inchikey_02"})
 
-    binned_spectrums = ms2ds_binner.fit_transform([spectrum_1, spectrum_2])
+    _ = ms2ds_binner.fit_transform([spectrum_1, spectrum_2])
     assert ms2ds_binner.known_bins == [10, 20, 30, 40, 50, 90, 99], "Expected different known bins."
 
     spectrum_3 = Spectrum(mz=np.array([10, 20, 30, 80.]),
@@ -91,3 +91,21 @@ def test_SpectrumBinner_transform_missing_fraction():
         _ = ms2ds_binner.transform([spectrum_3])
     assert "weighted spectrum is unknown to the model"in str(msg.value), \
         "Expected different exception."
+
+
+def test_SpectrumBinner_to_json():
+    """Test if conversion to json is done correctly"""
+    ms2ds_binner = SpectrumBinnerCustom(np.linspace(0, 100, 101), peak_scaling=1.0)
+    spectrum_1 = Spectrum(mz=np.array([10, 20, 50, 99.]),
+                          intensities=np.array([0.7, 0.6, 0.2, 0.1]),
+                          metadata={'inchikey': "test_inchikey_01"})
+    spectrum_2 = Spectrum(mz=np.array([10, 30, 40, 90.]),
+                          intensities=np.array([0.4, 0.5, 0.2, 0.1]),
+                          metadata={'inchikey': "test_inchikey_02"})
+
+    _ = ms2ds_binner.fit_transform([spectrum_1, spectrum_2])
+
+    binner_json = ms2ds_binner.to_json()
+    assert isinstance(binner_json, str), "Expected string type"
+    assert len(binner_json) == 850, "Expected different string length"
+    assert binner_json.startswith('{"number_of_bins"'), "Expected different string content"
